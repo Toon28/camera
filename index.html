@@ -11,8 +11,10 @@
   <button id="capture-button">Capture Photo</button>
   <div id="location-display"></div>
   <canvas id="photo-canvas" style="display: none;"></canvas>
+  <div id="URL"></div>
   <script>
 	const video = document.getElementById('camera-preview');
+	const URL = document.getElementById('URL');
 	const captureButton = document.getElementById('capture-button');
 	const locationDisplay = document.getElementById('location-display');
 	const canvas = document.getElementById('photo-canvas');
@@ -66,6 +68,7 @@
 	  getLocation();
 	  // คุณสามารถดึงข้อมูลจาก canvas และบันทึก/ส่งข้อมูลได้
 	  const imageDataURL = canvas.toDataURL('image/png');
+	  URL.innerHTML=imageDataURL
 	  // โค้ดเพิ่มเติมสำหรับการบันทึก/ส่งข้อมูล
 	});
   </script>
