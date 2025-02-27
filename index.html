@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ถ่ายภาพพร้อม GPS และเวลา</title>
+    <title>ถ่ายภาพ</title>
     <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
     <style>
         video, canvas {
@@ -16,8 +16,6 @@
     <canvas id="photo-canvas" style="display: none;"></canvas>
     <p id="location-display"></p>
     <button id="capture-button">ถ่ายภาพ</button>
-    <button id="download-button" style="display: none;">ดาวน์โหลด</button>
-
     <script>
         const video = document.getElementById('camera-preview');
         const canvas = document.getElementById('photo-canvas');
@@ -25,11 +23,10 @@
         const captureButton = document.getElementById('capture-button');
         const downloadButton = document.getElementById('download-button');
         const locationDisplay = document.getElementById('location-display');
-        let latitude = 13.7891937;
-        let longitude = 100.5531957;
+        let latitude = null;
+        let longitude = null;
         let LocTime = null;
 
-        // เข้าถึงกล้อง
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
@@ -38,24 +35,18 @@
                 console.error('Error accessing camera:', error);
             });
 
-        // เข้าถึง GPS
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
-            } else {
-                locationDisplay.innerHTML = 'Geolocation is not supported by this browser.';
-            }
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } 
+        else 
+        {
+            locationDisplay.innerHTML = 'Geolocation is not supported by this browser.';
         }
-
+        
         function showPosition(position) {
-            //latitude = position.coords.latitude;
-            //longitude = position.coords.longitude;
-
+            latitude = position.coords.latitude;
+            longitude = position.coords.longitude;
             locationDisplay.innerHTML = `Latitude: ${latitude}<br>Longitude: ${longitude}`;
-        }
-
-        function showError(error) {
-            // ... (โค้ดจัดการข้อผิดพลาด)
         }
 
         function downloadImage(dataURL, filename) {
@@ -67,19 +58,33 @@
             document.body.removeChild(a);
         }
 
-        // ถ่ายภาพ
-        captureButton.addEventListener('click', () => {
+        captureButton.addEventListener('click', async () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // ดึงข้อมูล GPS และเวลา
-            getLocation();
+            try {
+                await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            showPosition(position);
+                            resolve();
+                        },
+                        (error) => {
+                            console.error("Geolocation error:", error);
+                            reject(error);
+                        }
+                    );
+                });
+            }
+            catch (error) {
+                latitude = null;
+                longitude = null;
+                alert("ไม่สามารถระบุตำแหน่งได้");
+            }
             const now = new Date();
             const time = now.toLocaleTimeString();
             const date = now.toLocaleDateString();
 
-            // เพิ่มข้อมูลลงใน canvas
             context.fillStyle = 'white';
             context.font = '16px Arial';
             if (latitude && longitude) {
@@ -89,9 +94,8 @@
             context.fillText(`Time: ${time}`, 10, 60);
             context.fillText(`Date: ${date}`, 10, 80);
 
-            const imageDataURL = canvas.toDataURL('image/jpeg'); // เปลี่ยนเป็น JPEG เพื่อใช้ piexifjs
+            const imageDataURL = canvas.toDataURL('image/jpeg');
             
-            // เพิ่มข้อมูล Exif ด้วย piexifjs
             if (latitude && longitude) {
                 const exifObj = piexif.load(imageDataURL);
                 exifObj['GPS'][piexif.GPSIFD.GPSLatitudeRef] = latitude > 0 ? 'N' : 'S';
@@ -103,20 +107,13 @@
                 const exifImageDataURL = piexif.insert(exifStr, imageDataURL);
                 downloadImage(exifImageDataURL, 'photo.jpg');
             } else {
-                downloadImage(imageDataURL, 'photo.jpg');
+                const exifObj = piexif.load(imageDataURL);
+                exifObj['Exif'][piexif.ExifIFD.DateTimeOriginal] = now.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+                const exifStr = piexif.dump(exifObj);
+                const exifImageDataURL = piexif.insert(exifStr, imageDataURL);
+                downloadImage(exifImageDataURL, 'photo.jpg');
             }
-            downloadButton.style.display = 'block';
         });
-        downloadButton.addEventListener('click', () => {
-          canvas.toBlob((blob) => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'photo.jpg';
-            a.click();
-            window.URL.revokeObjectURL(url);
-          }, 'image/jpeg');
-        })
     </script>
 </body>
 </html>
