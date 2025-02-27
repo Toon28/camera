@@ -15,6 +15,8 @@
     <video id="camera-preview" autoplay></video>
     <canvas id="photo-canvas" style="display: none;"></canvas>
     <p id="location-display"></p>
+    <p id="Camera1"></p>
+    <p id="Camera2"></p>
     <button id="capture-button">ถ่ายภาพ</button>
     <script>
         const video = document.getElementById('camera-preview');
@@ -23,16 +25,31 @@
         const captureButton = document.getElementById('capture-button');
         const downloadButton = document.getElementById('download-button');
         const locationDisplay = document.getElementById('location-display');
+        const parCam1 = document.getElementById('Camera1');
+        const parCam2 = document.getElementById('Camera2');
         let latitude = null;
         let longitude = null;
         let LocTime = null;
-
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(error => {
-                console.error('Error accessing camera:', error);
+        let text=""
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                parCam1.innerHTML=`Camera : ${videoDevices.length} ตัว`
+                videoDevices.forEach(device => {
+                    text =text + `ID : ${device.deviceId}   Name: ${device.label}   Mode : ${device.facingMode}`
+                });
+                parCam2.innerHTML=text
+                const rearCamera = videoDevices.find(device => device.facingMode === 'environment');
+                if (rearCamera) {
+                    const constraints = {video: { deviceId: { exact: rearCamera.deviceId } }};
+                    navigator.mediaDevices.getUserMedia(constraints)
+                    .then(stream => {
+                        video.srcObject = stream;
+                    })
+                    .catch(error => {
+                        console.error('Error accessing camera:', error);
+                    });
+                }
             });
 
         if (navigator.geolocation) {
