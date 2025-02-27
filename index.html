@@ -36,7 +36,7 @@
                 const videoDevices = devices.filter(device => device.kind === 'videoinput');
                 parCam1.innerHTML=`Camera : ${videoDevices}`
                 videoDevices.forEach(device => {
-                    text =text + `ID : ${device.deviceId}   Name: ${device.label}   Mode : ${device.facingMode}   kind : ${device.kind}`
+                    text =text + `ID : ${device.deviceId}   Name: ${device.label}   Mode : ${device.facingMode}   kind : ${device.kind}<br>`
                 });
                 parCam2.innerHTML=text
                 const rearCamera = videoDevices.find(device => device.facingMode === 'environment');
