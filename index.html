@@ -33,8 +33,8 @@
         let text=""
         navigator.mediaDevices.enumerateDevices()
             .then(devices => {
-                const videoDevices = devices;
-                parCam1.innerHTML=`Camera : ${videoDevices.length} ตัว`
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                parCam1.innerHTML=`Camera : ${videoDevices}`
                 videoDevices.forEach(device => {
                     text =text + `ID : ${device.deviceId}   Name: ${device.label}   Mode : ${device.facingMode}   kind : ${device.kind}`
                 });
