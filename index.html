@@ -50,7 +50,7 @@
         function showPosition(position) {
             latitude = position.coords.latitude;
             longitude = position.coords.longitude;
-            LocTime = position.timestamp;
+            LocTime = position.time;
             locationDisplay.innerHTML = `Latitude: ${latitude}<br>Longitude: ${longitude}<br>TS: ${LocTime}`;
         }
 
