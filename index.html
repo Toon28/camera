@@ -2,8 +2,7 @@
 <html>
 <head>
     <title>ถ่ายภาพพร้อม GPS และเวลา</title>
-    <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
-    
+    <script src="https://unpkg.com/piexifjs@1.0.6/dist/piexif.min.js"></script>
     <style>
         video, canvas {
             width: 640px;
@@ -28,7 +27,8 @@
         const locationDisplay = document.getElementById('location-display');
         let latitude = null;
         let longitude = null;
-        
+        let imageDataURL = null;
+
         // เข้าถึงกล้อง
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
@@ -88,9 +88,12 @@
             context.fillText(`Time: ${time}`, 10, 60);
             context.fillText(`Date: ${date}`, 10, 80);
 
-            const imageDataURL = canvas.toDataURL('image/jpeg'); // เปลี่ยนเป็น JPEG เพื่อใช้ piexifjs
-
+            imageDataURL = canvas.toDataURL('image/jpeg'); // เปลี่ยนเป็น JPEG เพื่อใช้ piexifjs
+            setTimeout(Addexif, 10000);
+        });
             // เพิ่มข้อมูล Exif ด้วย piexifjs
+        function Addexif()
+        {
             if (latitude && longitude) {
                 const exifObj = piexif.load(imageDataURL);
                 exifObj['GPS'][piexif.GPSIFD.GPSLatitudeRef] = latitude > 0 ? 'N' : 'S';
@@ -105,7 +108,7 @@
                 downloadImage(imageDataURL, 'photo.jpg');
             }
             downloadButton.style.display = 'block';
-        });
+        }
         downloadButton.addEventListener('click', () => {
           canvas.toBlob((blob) => {
             const url = window.URL.createObjectURL(blob);
