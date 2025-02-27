@@ -27,8 +27,7 @@
         const locationDisplay = document.getElementById('location-display');
         let latitude = null;
         let longitude = null;
-        let LocTime = null;
-
+        
         // เข้าถึงกล้อง
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
@@ -50,8 +49,7 @@
         function showPosition(position) {
             latitude = position.coords.latitude;
             longitude = position.coords.longitude;
-            LocTime = position.time;
-            locationDisplay.innerHTML = `Latitude: ${latitude}<br>Longitude: ${longitude}<br>TS: ${LocTime}`;
+            locationDisplay.innerHTML = `Latitude: ${latitude}<br>Longitude: ${longitude}`;
         }
 
         function showError(error) {
